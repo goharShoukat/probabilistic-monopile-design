@@ -7,8 +7,8 @@ import tensorflow_probability as tfp
 
 hidden_units = [8, 8]
 learning_rate = 0.001
-dataset_size = 4898
 batch_size = 256
+dataset_size = 4898
 train_size = int(dataset_size * 0.85)
 
 
