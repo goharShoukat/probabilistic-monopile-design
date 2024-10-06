@@ -21,6 +21,15 @@ def get_train_and_test_splits(train_size, batch_size=1):
         .prefetch(buffer_size=dataset_size)
         .cache()
     )
+    sample_data = dataset.take(5)  # Take 5 samples for inspection
+
+    print("Input Features and Target Variables:")
+    for features, target in sample_data:
+        print("Features (x):")
+        for key, value in features.items():
+            print(f"  {key}: {value.numpy()}")
+        print(f"Target (y): {target.numpy()}\n")
+
     # We shuffle with a buffer the same size as the dataset.
     train_dataset = (
         dataset.take(train_size).shuffle(buffer_size=train_size).batch(batch_size)
