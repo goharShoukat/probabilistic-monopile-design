@@ -46,12 +46,7 @@ train = np.array(
 )
 test = np.array([files[8], files[12], files[15], files[21]])
 
-cols = [
-    "Depth",
-    "Cone Resistance qc",
-    "Corrected Cone Resistance qt",
-    "Sleeve Friction fs",
-]
+cols = ["Depth", "Smooth qt", "Smooth fs", "longitude", "latitude"]
 train_df = pd.DataFrame()
 for f in train:  #
     df = pd.read_csv(
@@ -79,15 +74,15 @@ for f in train:  #
     df["lng"] = np.ones(len(df)) * float(
         location[location["CPT"] == f[:-4]]["lng"]
     )
-    df["u2"] = pd.read_csv(bathyFilesDirec + f, skiprows=8).dropna()[
-        "Pore pressure u2"
-    ]
+    # df["u2"] = pd.read_csv(bathyFilesDirec + f, skiprows=8).dropna()[
+    #     "Pore pressure u2"
+    # ]
     train_df = pd.concat([train_df, df])
 train_df = train_df.rename(
     columns={
-        "Cone Resistance qc": "qc",
-        "Corrected Cone Resistance qt": "qt",
-        "Sleeve Friction fs": "fs",
+        # "Cone Resistance qc": "qc",
+        # "Corrected Cone Resistance qt": "qt",
+        # "Sleeve Friction fs": "fs",
     }
 )
 train_df.to_csv("train.csv", index=False)

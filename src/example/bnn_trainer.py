@@ -155,7 +155,6 @@ def create_probablistic_bnn_model(train_size):
     features = keras.layers.concatenate(list(inputs.values()))
     features = layers.BatchNormalization()(features)
 
-    # Create hidden layers with weight uncertainty using the DenseVariational layer.
     for units in hidden_units:
         features = tfp.layers.DenseVariational(
             units=units,
@@ -165,9 +164,6 @@ def create_probablistic_bnn_model(train_size):
             activation="sigmoid",
         )(features)
 
-    # Create a probabilisticå output (Normal distribution), and use the `Dense` layer
-    # to produce the parameters of the distribution.
-    # We set units=2 to learn both the mean and the variance of the Normal distribution.
     distribution_params = layers.Dense(units=2)(features)
     outputs = tfp.layers.IndependentNormal(1)(distribution_params)
 
@@ -200,7 +196,7 @@ def negative_loglikelihood(targets, estimated_distribution):
     return -estimated_distribution.log_prob(targets)
 
 
-num_epochs = 1000
+num_epochs = 100
 prob_bnn_model = create_probablistic_bnn_model(train_size)
 run_experiment(prob_bnn_model, negative_loglikelihood, train_dataset, test_dataset)
 # compute_predictions(bnn_model_small)
