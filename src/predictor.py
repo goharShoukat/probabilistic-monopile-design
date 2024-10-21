@@ -164,32 +164,33 @@ def negative_loglikelihood(targets, estimated_distribution):
     return -estimated_distribution.log_prob(targets)
 
 
+models = os.listdir("models/bnn_prob_model/")
 error = {}
 # Load the model with the custom loss function
-for model_path in [
-    "models/bnn_prob_model-qt-kl-weight-halved-1-layer-8-neurons",
-    "models/bnn_prob_model-qt-kl-weight-halved-1-layer-32-neurons",
-    "models/bnn_prob_model-qt-kl-weight-halved-2-layer-8-8-neurons",
-    "models/bnn_prob_model-qt-kl-weight-quartered-1-layer-32-neurons",
-]:
-    print(model_path + "--------------------------------------------------------")
+# for model_path in models:
+for model_path in models:
+    print(model_path)
     with keras.utils.custom_object_scope(
         {"negative_loglikelihood": negative_loglikelihood}
     ):
-        model = keras.models.load_model(model_path)
+        model = keras.models.load_model("models/bnn_prob_model/" + model_path)
 
-    # model = keras.models.load_model("models/bnn_prob_model")
-    # results = model.predict({"depth": X1, "lat": X2, "lng": X3, "bathymetry": X4})
     results = model({"depth": X1, "lat": X2, "lng": X3, "bathymetry": X4})
-    results = results.mean().numpy().tolist()
-    for i in range(len(results)):
-        print(f"Prediction: {results[i]}", f"Actual: {Y1[i]}")
-    print("--------------------------------------------------------")
-    error[model_path] = mean_squared_error(Y, results)
-for model_path in [
-    "models/bnn_prob_model-qt-kl-weight-halved-1-layer-8-neurons",
-    "models/bnn_prob_model-qt-kl-weight-halved-1-layer-32-neurons",
-    "models/bnn_prob_model-qt-kl-weight-halved-2-layer-8-8-neurons",
-    "models/bnn_prob_model-qt-kl-weight-quartered-1-layer-32-neurons",
-]:
-    print(error[model_path])
+    results_mean = results.mean().numpy().tolist()
+    prediction_stdv = results.stddev().numpy()
+
+    upper = (results_mean + (1.96 * prediction_stdv)).tolist()
+    lower = (results_mean - (1.96 * prediction_stdv)).tolist()
+
+    for idx in range(len(train)):
+        print(
+            f"Prediction mean: {round(results_mean[idx][0], 2)}, "
+            f"stddev: {round(prediction_stdv[idx][0], 2)}, "
+            f"95% CI: [{round(upper[idx][0], 2)} - {round(lower[idx][0], 2)}]"
+            f" - Actual: {Y[idx]}"
+        )
+    print("-------------------------------------------------------------")
+    error[model_path] = mean_squared_error(Y, results_mean)
+print(error.items())
+
+print(min(error))
